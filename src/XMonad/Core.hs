@@ -64,6 +64,8 @@ import System.Environment (lookupEnv)
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+import qualified Debug.Pretty.Simple as D
+
 -- | XState, the (mutable) window manager state.
 data XState = XState
     { windowset        :: !WindowSet                     -- ^ workspace list
@@ -77,6 +79,9 @@ data XState = XState
     -- The module "XMonad.Util.ExtensibleState" in xmonad-contrib
     -- provides additional information and a simple interface for using this.
     }
+
+instance Show XState where
+  show = show . stack . workspace . current . windowset
 
 -- | XConf, the (read-only) window manager configuration.
 data XConf = XConf
@@ -148,7 +153,11 @@ data ScreenDetail   = SD { screenRect :: !Rectangle } deriving (Eq,Show, Read)
 -- instantiated on 'XConf' and 'XState' automatically.
 --
 newtype X a = X (ReaderT XConf (StateT XState IO) a)
-    deriving (Functor, Monad, MonadFail, MonadIO, MonadState XState, MonadReader XConf, Typeable)
+    deriving (Functor, Monad, MonadFail, MonadIO, {- MonadState XState, -} MonadReader XConf, Typeable)
+
+instance MonadState XState X where
+  get = X get
+  put s = X $ D.pTrace (replicate 50 '\n' ++ show s) (put s)
 
 instance Applicative X where
   pure = return

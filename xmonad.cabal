@@ -80,6 +80,7 @@ library
                  , extensible-exceptions
                  , filepath
                  , mtl
+                 , pretty-simple         >= 2.2
                  , process
                  , setlocale
                  , unix
